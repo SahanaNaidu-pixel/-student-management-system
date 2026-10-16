@@ -8,7 +8,16 @@ const PASS_MARK = 35;
 const sampleResults = [
   { rollNo: "23CS001", name: "Arjun Reddy", semester: "3", maths: 85, physics: 78, chemistry: 72, english: 80, programming: 92 },
   { rollNo: "23CS002", name: "Priya Sharma", semester: "3", maths: 95, physics: 88, chemistry: 90, english: 86, programming: 97 },
-  { rollNo: "23EC001", name: "Rahul Verma", semester: "3", maths: 30, physics: 55, chemistry: 48, english: 62, programming: 58 }
+  { rollNo: "23CS003", name: "Kiran Kumar", semester: "3", maths: 68, physics: 72, chemistry: 65, english: 70, programming: 75 },
+  { rollNo: "23CS004", name: "Sneha Patel", semester: "3", maths: 88, physics: 82, chemistry: 79, english: 91, programming: 85 },
+  { rollNo: "23EC001", name: "Rahul Verma", semester: "3", maths: 30, physics: 55, chemistry: 48, english: 62, programming: 58 },
+  { rollNo: "23EC002", name: "Ananya Iyer", semester: "3", maths: 92, physics: 94, chemistry: 89, english: 90, programming: 93 },
+  { rollNo: "23EE001", name: "Vikram Singh", semester: "3", maths: 55, physics: 60, chemistry: 52, english: 58, programming: 50 },
+  { rollNo: "23EE002", name: "Divya Nair", semester: "3", maths: 74, physics: 69, chemistry: 71, english: 80, programming: 66 },
+  { rollNo: "23ME001", name: "Mohammed Faiz", semester: "3", maths: 45, physics: 40, chemistry: 38, english: 52, programming: 44 },
+  { rollNo: "23ME002", name: "Lakshmi Prasad", semester: "3", maths: 62, physics: 28, chemistry: 55, english: 67, programming: 60 },
+  { rollNo: "23CE001", name: "Rohan Gupta", semester: "3", maths: 58, physics: 63, chemistry: 61, english: 66, programming: 57 },
+  { rollNo: "23CE002", name: "Meghana Rao", semester: "3", maths: 81, physics: 77, chemistry: 84, english: 88, programming: 79 }
 ];
 
 function loadResults() {
