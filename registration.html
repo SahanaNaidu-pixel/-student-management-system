@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Student Management System</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="registration.html">Student Registration</a>
+      <a href="result.html">Student Result</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Register Student</h2>
+      <form id="registrationForm">
+        <label>Roll Number
+          <input type="text" id="rollNo" placeholder="e.g. 23CS001" required>
+        </label>
+        <label>Full Name
+          <input type="text" id="name" placeholder="Student name" required>
+        </label>
+        <label>Date of Birth
+          <input type="date" id="dob" required>
+        </label>
+        <label>Gender
+          <select id="gender" required>
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label>Email
+          <input type="email" id="email" placeholder="name@college.edu" required>
+        </label>
+        <label>Phone
+          <input type="tel" id="phone" placeholder="10-digit number" pattern="[0-9]{10}" required>
+        </label>
+        <label>Department
+          <select id="department" required>
+            <option value="">Select</option>
+            <option>CSE</option>
+            <option>ECE</option>
+            <option>EEE</option>
+            <option>MECH</option>
+            <option>CIVIL</option>
+          </select>
+        </label>
+        <label>Year
+          <select id="year" required>
+            <option value="">Select</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+          </select>
+        </label>
+        <button type="submit">Register</button>
+      </form>
+      <p id="regMessage" class="message"></p>
+    </section>
+
+    <section class="card">
+      <h2>Registered Students</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Roll No</th>
+              <th>Name</th>
+              <th>DOB</th>
+              <th>Gender</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Dept</th>
+              <th>Year</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="studentTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 College Student Management System</p>
+  </footer>
+
+  <script src="registration.js"></script>
+</body>
+</html>
