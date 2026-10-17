@@ -1,0 +1,7 @@
+# Local configuration (copy .env.example to .env)
+.env
+
+# SQLite database and uploaded profile photos
+data/
+
+node_modules/
