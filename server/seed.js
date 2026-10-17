@@ -1,6 +1,11 @@
 // npm run seed        - loads demo data into an empty database
 // npm run seed:reset  - wipes ALL records first, then loads demo data
 //
+// Flags and settings:
+//   --if-empty          do nothing (and succeed) when the database already has records;
+//                       used on every production start so existing data is never touched
+//   SEED_MODE=accounts  create only the user accounts, no demo data (for real use)
+//
 // The 12 students and their semester 3 marks are the records from the original
 // Student Registration and Student Result modules. Everything else is demo data.
 import fs from "node:fs";
@@ -9,11 +14,17 @@ import { config } from "./config.js";
 import { hashPassword, passwordProblem } from "./lib/auth.js";
 
 const reset = process.argv.includes("--reset");
+const ifEmpty = process.argv.includes("--if-empty");
+const accountsOnly = process.env.SEED_MODE === "accounts";
 
 migrate();
 
 const existing = db.prepare("SELECT (SELECT COUNT(*) FROM users) + (SELECT COUNT(*) FROM students) AS n").get().n;
 if (existing && !reset) {
+  if (ifEmpty) {
+    console.log("Database already has records; skipping seed.");
+    process.exit(0);
+  }
   console.error("The database already contains records. Nothing was changed.");
   console.error("Run `npm run seed:reset` to delete everything and load the demo data again.");
   process.exit(1);
@@ -23,11 +34,13 @@ const env = process.env;
 const accounts = [
   { username: env.SEED_ADMIN_USERNAME, password: env.SEED_ADMIN_PASSWORD, full_name: "System Administrator", role: "admin" },
   { username: env.SEED_STAFF_USERNAME, password: env.SEED_STAFF_PASSWORD, full_name: "Academic Office Staff", role: "staff" }
-];
+  // The staff account is optional when its username and password are left empty
+].filter((a) => a.role === "admin" || a.username || a.password);
 for (const a of accounts) {
   if (!a.username || !a.password) {
-    console.error("Set SEED_ADMIN_USERNAME, SEED_ADMIN_PASSWORD, SEED_STAFF_USERNAME and SEED_STAFF_PASSWORD.");
-    console.error("Copy .env.example to .env to use the demo values.");
+    console.error(a.role === "admin"
+      ? "Set SEED_ADMIN_USERNAME and SEED_ADMIN_PASSWORD (copy .env.example to .env to use the demo values)."
+      : "Set both SEED_STAFF_USERNAME and SEED_STAFF_PASSWORD, or leave both empty.");
     process.exit(1);
   }
   const problem = passwordProblem(a.password);
@@ -173,6 +186,12 @@ transaction(() => {
     userIds[a.role] = Number(lastInsertRowid);
   }
 
+  if (accountsOnly) {
+    db.prepare("INSERT INTO activity_log (user_id, action, entity, summary) VALUES (?, 'seed', 'system', ?)")
+      .run(userIds.admin, "Created the initial user accounts");
+    return;
+  }
+
   const deptIds = {};
   for (const [code, name, head, description] of departments) {
     deptIds[code] = Number(db.prepare("INSERT INTO departments (code, name, head_of_department, description) VALUES (?, ?, ?, ?)")
@@ -234,7 +253,7 @@ transaction(() => {
       for (const date of classDates(42, timetable[code])) {
         const r = random();
         const status = r < student.rate ? "present" : r < student.rate + 0.05 ? "late" : "absent";
-        insertAttendance.run(student.id, courseIds[code], date, status, userIds.staff);
+        insertAttendance.run(student.id, courseIds[code], date, status, userIds.staff ?? userIds.admin);
       }
     }
   }
@@ -266,6 +285,10 @@ if (reset && fs.existsSync(config.uploadDir)) {
 }
 
 const count = (t) => db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get().n;
-console.log(`Seeded ${count("departments")} departments, ${count("faculty")} faculty, ${count("courses")} courses, ` +
-  `${count("students")} students, ${count("attendance")} attendance records, ${count("exams")} exams and ${count("marks")} marks.`);
-console.log("Sign-in accounts are the SEED_* values from your .env file.");
+if (accountsOnly) {
+  console.log(`Created ${count("users")} user account(s). No demo data was loaded (SEED_MODE=accounts).`);
+} else {
+  console.log(`Seeded ${count("departments")} departments, ${count("faculty")} faculty, ${count("courses")} courses, ` +
+    `${count("students")} students, ${count("attendance")} attendance records, ${count("exams")} exams and ${count("marks")} marks.`);
+}
+console.log("Sign-in accounts are the SEED_* values from your configuration.");

@@ -45,7 +45,7 @@ export default function login({ root, query, setTitle }) {
             </div>
             <button class="btn btn-primary" type="submit">Sign in</button>
           </form>
-          <p class="login-note">Demo accounts are listed in the README and the <code>.env</code> file.</p>
+          <p class="login-note">Forgotten your password? Ask an administrator to reset it.</p>
         </div>
       </section>
     </div>`);

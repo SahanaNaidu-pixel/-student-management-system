@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "./config.js";
 import { migrate, db } from "./db.js";
-import { createRouter, sendJson, readJsonBody, HttpError, fromDbError, unauthorized, forbidden } from "./lib/http.js";
+import { createRouter, sendJson, readJsonBody, HttpError, fromDbError, unauthorized, forbidden, PUBLIC } from "./lib/http.js";
 import { userForToken, readCookie, SESSION_COOKIE } from "./lib/auth.js";
 import * as auth from "./routes/auth.js";
 import * as users from "./routes/users.js";
@@ -45,6 +45,15 @@ const router = createRouter();
 for (const module of [auth, users, students, departments, faculty, courses, attendance, exams, dashboard]) {
   module.register(router);
 }
+
+// Used by the hosting platform to check that the app and database respond
+router.get("/api/health", PUBLIC, () => {
+  db.prepare("SELECT 1").get();
+  return { ok: true };
+});
+
+// Over HTTPS, tell browsers to always use HTTPS for this site
+if (config.cookieSecure) SECURITY_HEADERS["Strict-Transport-Security"] = "max-age=15552000";
 
 function log(req, status, started) {
   const ms = (performance.now() - started).toFixed(1);
@@ -141,7 +150,19 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   if (userCount === 0) {
     console.warn("No user accounts exist yet. Run `npm run seed` to create the demo accounts and data.");
   }
-  createServer().listen(config.port, config.host, () => {
+  const server = createServer().listen(config.port, config.host, () => {
     console.log(`Student Management System running at http://${config.host === "0.0.0.0" ? "localhost" : config.host}:${config.port}`);
   });
+
+  // On redeploy the platform sends SIGTERM: finish open requests, then close the database cleanly
+  for (const signal of ["SIGTERM", "SIGINT"]) {
+    process.once(signal, () => {
+      console.log(`${signal} received, shutting down…`);
+      server.close(() => {
+        db.close();
+        process.exit(0);
+      });
+      setTimeout(() => process.exit(0), 10000).unref();
+    });
+  }
 }

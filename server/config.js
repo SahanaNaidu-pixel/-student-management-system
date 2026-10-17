@@ -30,5 +30,7 @@ export const config = {
   publicDir: path.join(ROOT, "public"),
   sessionTtlHours: Number(env.SESSION_TTL_HOURS || 8),
   cookieSecure: env.COOKIE_SECURE === "true",
+  // Behind a hosting proxy (Render, Nginx…) the real client IP is in X-Forwarded-For
+  trustProxy: env.TRUST_PROXY === "true",
   maxPhotoBytes: 2 * 1024 * 1024
 };

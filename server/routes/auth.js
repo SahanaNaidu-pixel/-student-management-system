@@ -1,6 +1,7 @@
 // Login, logout, current user and password change
 import { db } from "../db.js";
-import { HttpError, badRequest, PUBLIC, ANY_USER } from "../lib/http.js";
+import { config } from "../config.js";
+import { HttpError, badRequest, clientIp, PUBLIC, ANY_USER } from "../lib/http.js";
 import { validate, v } from "../lib/validate.js";
 import {
   verifyPassword, hashPassword, passwordProblem, createSession, destroySession, sessionCookie,
@@ -14,7 +15,7 @@ export function register(router) {
       username: v.string({ required: true, max: 50 }),
       password: v.string({ required: true, max: 128 })
     });
-    const limitKey = `${input.username.toLowerCase()}|${ctx.req.socket.remoteAddress}`;
+    const limitKey = `${input.username.toLowerCase()}|${clientIp(ctx.req, config.trustProxy)}`;
     if (loginLocked(limitKey)) {
       throw new HttpError(429, "Too many failed attempts. Please wait 15 minutes and try again.");
     }

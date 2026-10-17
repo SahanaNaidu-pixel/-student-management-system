@@ -62,7 +62,33 @@ Change these passwords before using the system with real data. Signed-in users c
 | `npm run migrate` | Apply new database migrations |
 | `npm run seed` | Load demo data into an **empty** database (refuses if data exists) |
 | `npm run seed:reset` | **Delete all records** and reload the demo data |
+| `npm run start:production` | Seed only if the database is empty, then start (used on Render) |
 | `npm test` | Run the API test suite against a temporary database |
+
+## Deploying to Render
+
+The repo includes a `render.yaml` Blueprint that sets up the web service, a **persistent disk** for the database and photos, and production settings (HTTPS-only cookies, proxy-aware login limits, health check).
+
+1. Sign in at [render.com](https://render.com) with your GitHub account and allow it to access this repository.
+2. Choose **New → Blueprint**, select this repository, and Render reads `render.yaml`.
+3. When asked for **`SEED_ADMIN_PASSWORD`**, enter a strong password (at least 8 characters with letters and numbers). It is stored only in Render, never in the repo.
+4. Confirm. Render shows the cost: the **Starter** instance plus a 1 GB disk (a disk requires a paid instance).
+5. When the deploy finishes, open the `https://<name>.onrender.com` URL and sign in as **`admin`** with that password.
+
+What happens on start (`npm run start:production`):
+
+- **First start:** migrations run and only the admin account is created (`SEED_MODE=accounts`). There are no demo students. Add departments and courses, then add students or import them from CSV.
+- **Every later start or redeploy:** the database already has records, so the seed step does nothing and your data is kept.
+- Pushing to `main` redeploys automatically. Apps with a disk have a short pause during each deploy.
+
+After the first sign-in:
+
+- Change the admin password under **user menu → Change password**. The `SEED_ADMIN_PASSWORD` value is only used once, for the first start.
+- Create staff accounts under **User accounts**.
+- Render takes daily snapshots of the disk. You can also download CSV exports from **Reports** as an extra backup.
+- To use your own domain, add it under the service's **Settings → Custom Domains**; HTTPS is automatic.
+
+To try a demo copy with sample data instead, set `SEED_MODE` to `demo` **before the first start** (the seed only ever runs on an empty database).
 
 ## Configuration (`.env`)
 
@@ -73,6 +99,8 @@ Change these passwords before using the system with real data. Signed-in users c
 | `UPLOAD_DIR` | `data/uploads` | Profile photos |
 | `SESSION_TTL_HOURS` | `8` | How long a sign-in lasts |
 | `COOKIE_SECURE` | `false` | Set to `true` when served over HTTPS |
+| `TRUST_PROXY` | `false` | Set to `true` behind a hosting proxy so login limits use the real client IP |
+| `SEED_MODE` | `demo` | `demo` loads sample data; `accounts` creates only the user accounts |
 | `SEED_*` | see `.env.example` | Accounts created by the seed script |
 
 `.env` and the `data/` folder are git-ignored, so passwords and student data are never committed.

@@ -31,6 +31,16 @@ export function fromDbError(error) {
   return null;
 }
 
+// The client's IP address. X-Forwarded-For is only trusted when TRUST_PROXY=true,
+// because otherwise anyone could send a fake one.
+export function clientIp(req, trustProxy) {
+  if (trustProxy) {
+    const forwarded = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+    if (forwarded) return forwarded;
+  }
+  return req.socket.remoteAddress || "unknown";
+}
+
 export function sendJson(res, status, body, headers = {}) {
   const payload = body === undefined ? "" : JSON.stringify(body);
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...headers });
